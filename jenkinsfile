@@ -50,7 +50,7 @@ pipeline {
                     // Use Kubeconfig to deploy in the Kubernetes cluster
                     withKubeConfig(credentialsId: 'kubeconfig-credentials') {
                         sh """
-                        kubectl set image deployment/hello-world-deployment hello-world-container=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${env.BUILD_NUMBER} -n default
+                        kubectl set image deployment/hello-world-deployment hello-world-container=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${env.BUILD_NUMBER} -n hello-world
                         """
                     }
                 }
