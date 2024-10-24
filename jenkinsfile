@@ -2,43 +2,36 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_REGISTRY = "192.168.4.81:5000" // Your private Docker registry
-        DOCKER_IMAGE = "hello-world-java"
-        BUILD_NUMBER = "1.0"
-        KUBECONFIG_CREDENTIALS = credentials('kubeconfig-credentials') // Add Jenkins credentials for Kubeconfig
+        REGISTRY = "192.168.4.81:5000"
+        IMAGE_NAME = "hello-world-java"
+        IMAGE_TAG = "1.0"
+        KUBECONFIG = credentials('kubeconfig-credentials') // Kubernetes credentials
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-credentials', url: 'https://github.com/prasan-cloud/test-deployment.git'
+                git branch: 'main', url: 'https://github.com/prasan-cloud/test-deployment.git'
             }
         }
 
         stage('Build') {
             steps {
                 script {
-                    // Compile and build the Java application with Maven
                     sh 'mvn clean package'
                 }
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
                 script {
-                    // Build Docker image
-                    sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER} ."
-                }
-            }
-        }
+                    // Build Docker image with provided tag
+                    docker.build("${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}")
 
-        stage('Docker Push') {
-            steps {
-                script {
-                    // Push Docker image to private Docker registry
-                    withDockerRegistry(credentialsId: 'docker-registry-credentials', url: "https://${DOCKER_REGISTRY}") {
-                        sh "docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${env.BUILD_NUMBER}"
+                    // Push Docker image to private registry
+                    docker.withRegistry("http://${REGISTRY}") {
+                        docker.image("${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}").push()
                     }
                 }
             }
@@ -47,14 +40,20 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Use Kubeconfig to deploy in the Kubernetes cluster
-                    withKubeConfig(credentialsId: 'kubeconfig-credentials') {
-                        sh """
-                        kubectl set image deployment/hello-world-deployment hello-world-container=${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${env.BUILD_NUMBER} -n hello-world
-                        """
-                    }
+                    // Apply the updated YAML file to deploy the new image version
+                    sh "kubectl --kubeconfig=${KUBECONFIG} apply -f $WORKSPACE/kubernetes-deployment.yaml"
                 }
             }
         }
     }
+
+    post {
+        success {
+            echo "Build and deployment successful with image tag: ${IMAGE_TAG}"
+        }
+        failure {
+            echo "Build or deployment failed."
+        }
+    }
 }
+
