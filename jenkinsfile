@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = "192.168.4.81:5000" // Your private Docker registry
         DOCKER_IMAGE = "hello-world-java"
-        env.BUILD_NUMBER = "1.0"
+        BUILD_NUMBER = "1.0"
         KUBECONFIG_CREDENTIALS = credentials('kubeconfig-credentials') // Add Jenkins credentials for Kubeconfig
     }
 
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker image
-                    sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${env.BUILD_NUMBER} ."
+                    sh "docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_NUMBER} ."
                 }
             }
         }
