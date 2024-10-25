@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-world-deployment
+  name: hello-world-deployments
   namespace: hello-world
 spec:
   replicas: 2
@@ -14,7 +14,7 @@ spec:
         app: hello-world
     spec:
       containers:
-      - name: hello-world-container
+      - name: hello-world-containers
         image: 192.168.4.81:5000/hello-world-java:1.1
         ports:
         - containerPort: 8080
@@ -22,7 +22,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: hello-world-service
+  name: hello-world-services
   namespace: hello-world
 spec:
   selector:
