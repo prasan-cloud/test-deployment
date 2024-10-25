@@ -4,7 +4,7 @@ pipeline {
     environment {
         REGISTRY = "192.168.4.81:5000"
         IMAGE_NAME = "hello-world-java"
-        IMAGE_TAG = "1.1"
+        IMAGE_TAG = "1.0"
         KUBECONFIG = credentials('kubeconfig-credentials') // Kubernetes credentials
     }
 
